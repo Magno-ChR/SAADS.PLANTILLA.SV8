@@ -1,0 +1,54 @@
+@inject IJSRuntime js
+<div class="modal" id="Preload" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true" style="z-index:1060 !important">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="background-color: transparent !important;border:none">
+            <div class="d-flex justify-content-center">
+                <div class="spinner-border text-light" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@if(MyProperty is not null)
+{
+    
+@MyProperty
+}
+@code {
+    [Parameter] public string? idContenderoPadre { get; set; } = "formulario";
+    [Parameter] public RenderFragment? MyProperty { get; set; }
+
+    
+    //private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private bool isLoad;
+    //mostrar spinner cuando isLoad = true
+    //ocultar spinner cuando isLoad = false
+    
+    
+    
+
+
+    
+    public async Task mostrarSpinner()
+    {
+        var Modal = $"$('#Preload').modal('show');";
+        await js.InvokeVoidAsync("eval", Modal);
+
+        await js.InvokeVoidAsync("spinnerJS", idContenderoPadre);
+        //await Task.Delay(3000); // call the service/api
+        //js.InvokeVoidAsync("spinnerJSEnd", id);
+        //var Modal2 = $"$('#Preload').modal('hide');";
+        //await js.InvokeVoidAsync("eval", Modal2);
+    }
+    public async Task ocultarSpinner()
+    {
+
+        await js.InvokeVoidAsync("spinnerJSEnd", idContenderoPadre);
+        var Modal2 = $"$('#Preload').modal('hide');";
+        await js.InvokeVoidAsync("eval", Modal2);
+    }
+}

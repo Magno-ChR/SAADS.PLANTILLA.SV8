@@ -1,0 +1,101 @@
+﻿@using System.ComponentModel.DataAnnotations
+@inject NavigationManager navigationManager
+@inject UserJWT userJWT
+@inject IRepositorio repositorio
+@inject IMensajeToastr mensajeToastr
+@inject SecurityRN securityRN
+
+@if (cargando)
+{
+    @if (Verificando == null)
+    {
+       // <text>Verificando autorización...</text>
+        @verificacandoTexto
+    }
+    else
+    {
+        @Verificando   
+    }
+}
+else
+{
+    if (Tareas != null && Tareas.Count > 0 && autorizado)
+    {
+        @Autorizado(Tareas)
+    }
+    else
+    {
+        //texto no autorizado para ver esta página
+
+         <div class="alert alert-danger" role="alert">
+                            <h4 class="alert-heading">Sin autorización</h4>
+                            <p>Usted no tiene permisos para acceder a esta vista.</p>
+                            <hr>
+                            <p class="mb-0">Si cree que esto es un error, contacte al administrador.</p>
+         </div>
+    }
+}
+
+
+@code {
+    [Parameter] public RenderFragment? Verificando { get; set; }
+    [Parameter] public RenderFragment<List<TareaDTO>> Autorizado { get; set; }
+    [Parameter]
+    public RenderFragment verificacandoTexto { get; set; }  = @<text>Verificando autorización...</text>;
+
+    [Parameter] public int InterfaceId { get; set; }
+    [Parameter] public string? Permiso { get; set; }
+
+    public List<TareaDTO>? Tareas;
+
+    private bool cargando = true;
+    private bool autorizado = false;
+    protected override async Task OnInitializedAsync()
+    {
+     
+        await traerTareas();
+    }
+
+    private async Task traerTareas()
+    {
+        cargando = true;
+      //  repositorio.AsignarUrlBase(Endpoint.auth);
+        var resp = await securityRN.getTareas(InterfaceId);
+        if (resp.Success)
+        {            
+            Tareas = resp.value;
+            verificarAutorizacion();
+        }
+        else
+        {
+            Tareas = null;          
+           await mensajeToastr.MostrarMensajeErrorWithTitle(resp!.Message, "Error");
+         
+
+
+        }
+
+        cargando = false;
+    }
+
+    private void verificarAutorizacion()
+    {
+        if (Tareas != null && Tareas.Count > 0)
+        {
+            if (Permiso != null)
+            {
+                var xPermiso = Permiso.Split(",");
+                autorizado =  Tareas.Any(x => xPermiso.Contains(x.Id.ToString()));
+            }
+            else
+            {
+                autorizado = true;
+            }
+        }
+        else
+        {
+            autorizado = false;
+        }
+    }
+
+}

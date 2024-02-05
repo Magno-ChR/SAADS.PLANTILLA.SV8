@@ -1,0 +1,209 @@
+﻿@inject IJSRuntime js
+@inject NavigationManager navigator
+
+<div class="top-row  navbar navbar-dark d-flex align-items-center">
+    <div class="container-fluid">
+        <button class="navbar-toggler close-canvas bg-transparent border-0 position-sticky fs-2 text-light" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
+            <i class="bi bi-list"></i>
+        </button>
+
+        <div class="logo ">
+            <div class="logo-img"></div>
+        </div>
+    </div>
+</div>
+
+
+<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasExampleLabel"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="body-sidebar">
+            <div class="body-perfil">
+
+                <LoginDisplay />
+            </div>
+            <div class="body-nav">
+
+                <ListadoGenerico Listado="interfaces">
+                    <HayRegistros Context="item">
+                        <nav class="flex-column nav nav-pills mb-1">
+                            <div class="nav-item " data-bs-dismiss="offcanvas">
+                                <NavLink class="nav-link icon-link icon-link-hover border-grow" href="@item.Ubicacion" Match="NavLinkMatch.All">
+                                    <span class="@item.Icono me-1" aria-hidden="true"></span> @item.Titulo
+                                </NavLink>
+                            </div>
+                        </nav>
+                    </HayRegistros>
+                </ListadoGenerico>
+            </div>
+        </div>
+        <div class="theme-sidebar d-flex justify-content-center">
+            <div class="radio-wrapper c-pointer mb-2 d-flex flex-row gap-2">
+                <InputRadioGroup TValue="int" Value="type" ValueChanged="async (e)=>{type=e;await setTheme(e);}" ValueExpression="()=>type">
+                    <InputRadio TValue="int" Value="1" class="btn-check" id="sun"> </InputRadio>
+                    <label for="sun" class="btn btn-outline-warning rounded-circle border-2 d-flex justify-content-center"><i class="bi-sun-fill "></i></label>
+                    <InputRadio TValue="int" Value="2" class="btn-check" id="auto"></InputRadio>
+                    <label class="btn btn-outline-primary  rounded-circle border-2 d-flex justify-content-center" for="auto"><span class="">A</span></label>
+                    <InputRadio TValue="int" Value="3" id="moon" class="btn-check"></InputRadio>
+                    <label class="btn btn-outline-secondary rounded-circle border-2d-flex justify-content-center" for="moon"><i class="bi-moon-fill"></i></label>
+                </InputRadioGroup>
+            </div>
+
+        </div>
+        <div class="footer ">
+            <div class="detail-version d-flex align-items-center flex-column">
+                <p class="mb-0">&copy; 2023 - V1.5 DT</p>
+                <p>UPDS Copyright</p>
+            </div>
+            <button class="btn btn-danger btn-logout w-100 " @onclick="logout">
+                Cerrar sesion
+                <i class="bi bi-box-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+        color: #fff !important;
+    }
+
+        .nav-pills .nav-link.active:hover {
+            border: none;
+        }
+
+    .nav-pills .nav-link {
+        width: 100%;
+        color: inherit !important;
+        font-size: 1rem;
+    }
+
+    .nav-link span {
+        height: fit-content !important
+    }
+
+    .border-grow.active::before {
+        height: 0px;
+    }
+
+    .border-grow {
+        position: relative;
+        overflow: hidden;
+    }
+
+        .border-grow::before {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 1.7px; /* Alto del borde inferior */
+            background-color: #007bff; /* Color del borde inferior */
+            transform: translateX(-50%);
+            transition: width 0.3s ease-in-out; /* Añade una transición para el crecimiento suave */
+        }
+
+        .border-grow:hover::before {
+            width: 100%; /* Aumenta el ancho al 100% al pasar el mouse */
+        }
+    /* Clase para aplicar efecto de fondo que crece desde el centro */
+    .background-grow {
+        position: relative;
+        overflow: hidden;
+    }
+
+        .background-grow::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(208, 208, 208, 0.3); /* Nuevo color de fondo */
+            border-radius: 50%; /* Hace que el fondo sea un círculo */
+            transform: translate(-50%, -50%);
+            transition: width 0.5s ease-in-out, height 0.3s ease-in-out, background 0.3s ease-in-out; /* Añade transiciones para el crecimiento suave y cambio de color */
+        }
+
+        .background-grow:hover::before {
+            width: 200%;
+            height: 200%;
+        }
+
+</style>
+
+@code {
+
+    [CascadingParameter] protected ValuesParameters? valuesParameters { get; set; }
+    List<InterfaceDTO>? interfaces = new List<InterfaceDTO>();
+    private int type { get; set; }
+    private string InterfaceTitle;
+    private async Task setTheme(int type) => await js.InvokeAsync<object>("settheme", getThemeType);
+
+    private string getThemeType
+    {
+        get
+        {
+            switch (type)
+            {
+                case 1: return "light";
+                case 2: return "auto";
+                case 3: return "dark";
+                default: return "";
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // if (valuesParameters!=null)
+        // {
+        //     if (valuesParameters.Interfaces!=null)
+        //     {
+        //         interfaces = valuesParameters.Interfaces.Where(a => a.Tipo == 1).ToList();
+        //     }
+        // }
+
+        await getThemeCache();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+
+        if (valuesParameters != null)
+        {
+            if (valuesParameters.Interfaces != null)
+            {
+                interfaces = valuesParameters.Interfaces.Where(a => a.Tipo == 1).ToList();
+            }
+        }
+    }
+
+
+    private void logout()
+    {
+        navigator.NavigateTo("Logout");
+    }
+
+    private async Task getThemeCache()
+    {
+        var modo = await js.GetFromLocalStorage("theme");
+        switch (modo)
+        {
+            case "light":
+                type = 1;
+                break;
+            case "dark":
+                type = 3;
+                break;
+            case "auto":
+                type = 2;
+                break;
+            default:
+                break;
+        }
+    }
+}

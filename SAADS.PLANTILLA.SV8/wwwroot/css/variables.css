@@ -1,0 +1,12 @@
+
+:root, [data-bs-theme=light] {
+    /**/
+    --bs-tertiary-bg: #dee2e6;
+    --bs-border-color: #ced4da;
+}
+
+[data-bs-theme="dark"] {
+    /**/
+    --bs-tertiary-bg: #2b3035;
+    --bs-border-color: #495057;
+}

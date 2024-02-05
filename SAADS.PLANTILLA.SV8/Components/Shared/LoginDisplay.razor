@@ -1,0 +1,74 @@
+﻿@inject NavigationManager navigationManager
+@inject UserJWT userJWT
+@inject IRepositorio repositorio
+@inject SecurityRN securityRN
+<AuthorizeView>
+    <Authorized>
+        @if (userAuth != null && userAuth.IsAuthenticated)
+        {
+            @if (persona != null && !string.IsNullOrEmpty(persona.Foto))
+            {
+                <div class="perfil-foto" style="background-image:url('@persona.Foto')"> </div>
+            }
+            else
+            {
+                <div class="perfil-foto" style="background-image: url('https://media.istockphoto.com/vectors/default-profile-picture-avatar-photo-placeholder-vector-illustration-vector-id1223671392?k=20&m=1223671392&s=612x612&w=0&h=lGpj2vWAI3WUT1JeJWm1PRoHT3V15_1pdcTn2szdwQ0=');" alt="Foto"></div>
+
+            }
+            <p class="perfil-nombre mt-2 mb-0 lh-1">@userAuth.UserName</p>
+            <p class="perfil-detalle mt-1 mb-0 text-overflow">@userAuth.Email</p>
+
+            @if (userAuth.Tipo == "Funcionario")
+            {
+                <p class="perfil-detalle text-center text-overflow">@userAuth.CargoNombre - @userAuth.SedeNombre</p>
+            }
+            else
+            {
+                <p class="perfil-detalle text-center text-overflow">@userAuth.Tipo - @userAuth.SedeNombre</p>
+            }
+        }
+    </Authorized>
+    <NotAuthorized>
+        <a class="nav-link" href="Login">Log in</a>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+    [CascadingParameter] protected ValuesParameters? valuesParameters { get; set; }
+    UserAuth? userAuth;
+    PersonaDTO? persona;
+    protected override async Task OnInitializedAsync()
+    {
+        // userAuth = await userJWT.GetUserAuth();
+
+        // if (valuesParameters!=null)
+        // {
+        //     persona = valuesParameters.User;
+        // }
+
+        // // repositorio.AsignarUrlBase(Endpoint.auth);
+        // var resp = await securityRN.getPersona();
+        // if (resp.Success)
+        //    persona = resp.value;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+
+        if (valuesParameters != null)
+        {
+            userAuth = await userJWT.GetUserAuth();
+            persona = valuesParameters.User;
+        }
+    }
+    
+    private void logout()
+    {
+        navigationManager.NavigateTo("Logout");
+    }
+
+
+
+
+}

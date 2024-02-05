@@ -1,0 +1,90 @@
+﻿@page "/Login/auth"
+@layout LoginLayout
+
+@inject IRepositorio repositorioHTTP
+@inject IMostrarMensajes mostrarMensajes
+@inject NavigationManager navigationManager
+@inject Auth.ILoginService loginService
+@inject IJSRuntime js
+
+<h3>Login</h3>
+
+@code {
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public string? token { get; set; }
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public string? returnpage { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var authState = await authenticationStateTask!;
+
+            if (authState.User.Identity!.IsAuthenticated)
+            {
+                var urlReturn = navigationManager.Uri.ToString();
+                navigationManager.NavigateTo("/");
+            }
+            else
+            {
+                await LoginUsuario();
+            }
+        }
+    }
+
+    private async Task LoginUsuario()
+    {
+
+        if (string.IsNullOrEmpty(token))
+        {
+            await mostrarMensajes.MostrarMensajeError("No existe parametro de inicio.");
+        }
+        else
+        {
+            bool x = await loginService.Login(token);
+            if (x)
+            {
+                if (!string.IsNullOrEmpty(token))
+                {
+                    //leer desde el localStorage el returnpage
+                    var returnpage = await js.GetFromLocalStorage("returnpage");
+
+                    returnpage = System.Web.HttpUtility.UrlDecode(returnpage);
+
+                    if (!string.IsNullOrEmpty(returnpage))
+                    {
+                        //borrar el returnpage del localStorage
+                        await js.RemoveItem("returnpage");
+                        navigationManager.NavigateTo(returnpage!);
+                    }
+
+                    else
+                    {
+
+                        navigationManager.NavigateTo("");
+
+
+                    }
+
+                }
+                else
+                {
+                    await mostrarMensajes.MostrarMensajeError("Inicio no valido.");
+                }
+            }
+
+        }
+    }
+
+
+
+
+
+}

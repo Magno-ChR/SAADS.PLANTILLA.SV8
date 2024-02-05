@@ -1,0 +1,33 @@
+﻿@if(isStart)
+{
+ <div class="dashboard-spinner">
+    <svg>
+        <circle class="bg-spinner" cx="57" cy="57" r="23" />
+        <circle class="meter-1" cx="57" cy="57" r="23" />
+    </svg>
+</div>
+@*    <div class="loader success">
+        <div class="loader-icon">
+            <svg class="circular-loader" viewBox="25 25 50 50">
+                <circle class="loader-path" cx="50" cy="50" r="20" fill="none" stroke-width="4" stroke-miterlimit="10" />
+            </svg>
+            <i class="fas fa-check"></i>
+        </div>
+        <div class="loader-text">
+            Carga exitosa
+        </div>
+    </div>*@
+   @* <div class="sa">
+        <div class="sa-success">
+            <div class="sa-success-tip"></div>
+            <div class="sa-success-long"></div>
+            <div class="sa-success-placeholder"></div>
+            <div class="sa-success-fix"></div>
+        </div>
+    </div>*@
+}
+
+@code {
+    [Parameter]
+    public bool isStart { get; set; }
+}

@@ -1,0 +1,23 @@
+﻿.perfil-foto {
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    width: 80px !important;
+    height: 80px !important;
+    border-radius: 50%;
+    display: block;
+    margin: auto;
+}
+
+.perfil-nombre {
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    text-align: center;
+}
+
+.perfil-detalle {
+    font-size: 10px;
+    font-weight: 200;
+    text-align: center;
+}
+

@@ -1,0 +1,29 @@
+﻿<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+            <Authorizing>
+                <div class="text-center">
+
+                    <text class="sr-only">Autorizando...</text>
+
+                </div>
+            </Authorizing>
+            <NotAuthorized>
+                <div class="text-center">
+                    <h1>No autorizado</h1>
+                </div>
+            </NotAuthorized>
+
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <CascadingAuthenticationState>
+            <PageTitle>No se encuentra</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p role="alert">No se encuentra la direccion solicitada.</p>
+            </LayoutView>
+
+        </CascadingAuthenticationState>
+    </NotFound>
+</Router>

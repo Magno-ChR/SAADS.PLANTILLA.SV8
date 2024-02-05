@@ -1,0 +1,12 @@
+﻿@if (ShowSpin == null || ShowSpin == true)
+{
+    <div class="d-flex justify-content-center ">
+        <div class="spinner-border text-light text-center " role="status" style="width: 3rem !important;height: 3rem !important;">
+            <span class="sr-only">Cargando...</span>
+        </div>
+    </div>
+}
+@code {
+    [Parameter] public  bool? ShowSpin { get; set; } = null;
+  
+}

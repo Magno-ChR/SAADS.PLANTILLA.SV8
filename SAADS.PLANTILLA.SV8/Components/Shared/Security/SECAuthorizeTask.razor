@@ -1,0 +1,69 @@
+﻿@if (tienePermiso)
+{
+    @ChildContent
+}
+else
+{
+    @if (WithoutAuthorization != null)
+    {
+        @WithoutAuthorization
+    }
+   
+
+}
+
+
+@code {
+    [CascadingParameter] protected ValuesParameters? valuesParameters { get; set; }
+    [Parameter] public string permissions { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? WithoutAuthorization { get; set; }
+
+    private bool tienePermiso = false;
+
+
+    protected override void OnInitialized()
+    {
+        if (valuesParameters != null)
+        {
+            var interfaces = valuesParameters.Interfaces;
+
+            if (interfaces != null)
+            {
+                checkPermission(interfaces);
+            }
+
+
+        }
+    }
+
+
+    protected override void OnParametersSet()
+    {
+        //if (valuesParameters != null)
+        //{
+        //    var interfaces = valuesParameters.Interfaces;
+
+        //    if (interfaces != null)
+        //    {
+        //        checkPermission(interfaces);
+        //    }
+
+
+        //}
+
+    }
+
+    private void checkPermission(List<DTOs.Security.InterfaceDTO> interfaces)
+    {
+        var permisosSet = new HashSet<string>(permissions.Split(','));
+
+        bool result = interfaces.Any(x => x.Tareas.Any(t => permisosSet.Contains(t.Id.ToString())));
+
+        tienePermiso = result;
+
+
+    }
+
+
+}

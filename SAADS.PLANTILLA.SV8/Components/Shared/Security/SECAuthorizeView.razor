@@ -1,0 +1,86 @@
+﻿@if (valuesParameters == null)
+{
+
+    if (Charging != null)
+    {
+        @Charging
+    }
+    else
+    {
+        <Spinner></Spinner>
+    }
+}
+else
+{
+    if (authorized)
+    {
+        if (ChildContent != null)
+        {
+            @ChildContent(tasks!)
+        }
+        else
+        {
+            <h1>Autorizado</h1>
+        }
+
+    }
+    else
+    {
+        @if (WithoutAuthorization != null)
+        {
+            @WithoutAuthorization
+        }
+        else
+        {
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">Sin autorización</h4>
+                <p>Usted no tiene permisos para acceder a esta vista.</p>
+                <hr>
+                <p class="mb-0">Si cree que esto es un error, contacte al administrador.</p>
+            </div>
+        }
+
+    }
+}
+@code {
+    [CascadingParameter] protected ValuesParameters? valuesParameters { get; set; }
+    [Parameter] public int InterfaceId { get; set; } = 0;
+    [Parameter] public RenderFragment<List<DTOs.Security.TareaDTO>>? ChildContent { get; set; }
+    [Parameter] public RenderFragment? WithoutAuthorization { get; set; }
+    [Parameter] public RenderFragment? Charging { get; set; }
+
+    List<DTOs.Security.TareaDTO>? tasks;
+    private bool authorized = false;
+
+    protected override void OnInitialized()
+    {
+        if (valuesParameters != null)
+        {
+            var interfaces = valuesParameters.Interfaces;
+
+            if (interfaces != null)
+            {
+                checkPermission(interfaces);
+            }
+
+
+        }
+    }
+
+    private void checkPermission(List<DTOs.Security.InterfaceDTO> interfaces)
+    {
+
+        bool result = interfaces.Any(x => x.Id == InterfaceId && x.Tareas.Any());
+
+        authorized = result;
+
+        if (authorized)
+        {
+            tasks = interfaces.FirstOrDefault(a => a.Id == InterfaceId)!.Tareas;
+
+
+        }
+
+
+    }
+}

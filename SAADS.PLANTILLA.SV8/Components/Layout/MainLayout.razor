@@ -1,0 +1,161 @@
+﻿@inherits LayoutComponentBase
+@inject RN.SecurityRN securityRN
+
+
+
+<PageTitle>SAADS - PLANTILLA</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        @if (permissionsLoaded)
+        {
+            <CascadingValue Value="@valuesParameters" >
+
+                <div class="page">
+
+                    <div class="sidebar">
+                        <NavMenu />
+                    </div>
+
+                    <main>
+
+                        <button class="mt-1 ms-1 close-canvas bg-transparent border-0 position-fixed fs-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
+                            <i class="bi bi-list"></i>
+                        </button>
+                        <article class="container ">
+                            @*          <CascadingValue Value="InterfaceTitle">*@
+                            @Body
+                            @*     </CascadingValue>*@
+                        </article>
+
+                    </main>
+                </div>
+
+            </CascadingValue>
+        }
+
+    </Authorized>
+    <NotAuthorized>
+        <NoAutorizado></NoAutorizado>
+    </NotAuthorized>
+</AuthorizeView>
+@code
+{
+    [Inject] InactivityService InactivityService { get; set; }
+    [Inject] NavigationManager navigationManager { get; set; }
+    [Inject] IJSRuntime js { get; set; }
+
+    [CascadingParameter]
+    public Task<AuthenticationState>? authenticationStateTask { get; set; }
+
+    List<InterfaceDTO> interfaces = new List<InterfaceDTO>()
+    {
+        new InterfaceDTO {Titulo = "Inicio", Ubicacion = "", Icono = "bi bi-house", Tipo= 1 },
+       new InterfaceDTO { Titulo = "Example", Ubicacion = "example", Icono = "bi bi-book", Tipo= 1 },
+       new InterfaceDTO { Titulo = "Counter", Ubicacion = "counter", Icono = "bi bi-plus", Tipo= 1 },
+       new InterfaceDTO { Titulo = "Fetch Data", Ubicacion = "fetchdata", Icono = "bi bi-sun", Tipo= 1 },
+        new InterfaceDTO { Titulo = "New Example", Ubicacion = "newexample", Icono = "fa-solid fa-newspaper", Tipo= 1 },
+    };
+
+
+    private ValuesParameters? valuesParameters;
+
+    private bool modoPlantilla = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        InactivityService.OnUserInactive += HandleUserInactive;
+        InactivityService.Start();
+        InactivityService.StartStorageEvent(DotNetObjectReference.Create(this));
+
+
+        var authState = await authenticationStateTask!;
+        var user = authState.User;
+
+
+        var token = navigationManager.QueryString("token");
+
+        if (user.Identity!.IsAuthenticated && string.IsNullOrEmpty(token))
+        {
+            //  navigationManager.DeleteQueryString("token");
+
+            await getPermissons();
+        }
+        else
+        {
+            if (user.Identity!.IsAuthenticated! && !string.IsNullOrEmpty(token))
+            {
+                var returnPage = navigationManager.GetUrlDeleteQueryString("token", true);
+
+                navigationManager.NavigateTo($"login/auth?token={token}&returnpage={returnPage}");
+            }
+
+
+        }
+    }
+
+    private async void HandleUserInactive()
+    {
+        // Lógica a realizar cuando el usuario está inactivo
+        //Console.WriteLine("El usuario está inactivo.");
+        // Limpia el token
+        await js.SetInLocalStorage("TOKENKEY", "");
+        await VerificarLogueo();
+    }
+    private bool permissionsLoaded = false;
+    private async Task getPermissons()
+    {
+        permissionsLoaded = false;
+        valuesParameters = null;
+        StateHasChanged();
+
+        var persona = await securityRN.getPersona();
+
+        if (!modoPlantilla)
+        {
+
+            var resinterfaces = await securityRN.getInterfacesTareas(31000);
+
+            if (resinterfaces != null)
+            {
+                interfaces = resinterfaces.value;
+            }
+        }
+
+
+
+
+        valuesParameters = new ValuesParameters
+            {
+                Interfaces = interfaces,
+                User = persona.value
+            };
+
+
+        permissionsLoaded = true;
+
+        StateHasChanged();
+
+    }
+
+    [JSInvokable]
+    public async Task VerificarLogueo()
+    {
+        var authState = await authenticationStateTask!;
+        var user = authState.User;
+        if (user.Identity!.IsAuthenticated)
+        {
+            var token = await js.GetFromLocalStorage("TOKENKEY");
+
+            if (string.IsNullOrEmpty(token))
+            {
+                var returnPage = navigationManager.GetUrlDeleteQueryString("token", true);
+                navigationManager.NavigateTo($"Login?returnPage={returnPage}", true);
+            }
+            else
+            {
+               await getPermissons();
+            }
+        }
+    }
+}

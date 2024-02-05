@@ -1,0 +1,19 @@
+﻿@layout LoginLayout
+@page "/Logout"
+@inject NavigationManager navigationManager
+@inject Auth.ILoginService loginService
+<h3>Cerrando sesión...</h3>
+
+@code {
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await loginService.Logout();
+            navigationManager.NavigateTo("Login");
+
+        }
+
+    }
+}

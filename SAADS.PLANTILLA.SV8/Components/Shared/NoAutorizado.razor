@@ -1,0 +1,76 @@
+﻿@inject NavigationManager navigationManager
+@inject IJSRuntime JSRuntime
+@inject IConfiguration configuration
+<h3>No Autorizado</h3>
+
+<h3>No estas autorizado para ver este contenido</h3>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        var authState = await authenticationStateTask!;
+
+        if (!authState.User.Identity!.IsAuthenticated)
+        {
+            var token = navigationManager.QueryString("token");
+            var urlSinToken = navigationManager.GetUrlDeleteQueryString("token", true);
+
+            if (!string.IsNullOrEmpty(token) && !string.IsNullOrEmpty(urlSinToken))
+            {
+                await JSRuntime.SetInLocalStorage("returnpage", urlSinToken);
+
+                navigationManager.NavigateTo($"Login/auth?token={token}");
+            }
+            else
+            {
+                var urlReturn = navigationManager.Uri.ToString();
+
+               // loginOffice(urlReturn);
+
+                var urlbase = navigationManager.BaseUri.ToString();
+                if (urlReturn != urlbase)
+                    navigationManager.NavigateTo("Login?returnpage=" + urlReturn);
+                else
+                {
+                    navigationManager.NavigateTo("Login");
+                }
+            }
+
+
+
+
+
+        }
+
+
+    }
+
+
+    private void loginOffice(string returnpage)
+    {
+        var urlLoginOffice = configuration["urllogin"];
+        string urlLoginLocal = navigationManager.BaseUri + "Login/Auth";
+
+
+
+        if (!string.IsNullOrEmpty(returnpage))
+        {
+            string xreturn = navigationManager.GetEncodeHtml(returnpage);
+
+            urlLoginLocal += "&returnpage=" + xreturn;
+            urlLoginOffice += urlLoginLocal;
+            navigationManager.NavigateTo(urlLoginOffice, true);
+        }
+        else
+        {
+            urlLoginOffice += urlLoginLocal;
+            navigationManager.NavigateTo(urlLoginOffice, true);
+        }
+    }
+
+}

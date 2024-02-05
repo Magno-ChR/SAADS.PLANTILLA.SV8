@@ -1,0 +1,40 @@
+﻿
+@if(tienePermiso)
+{
+    @ChildContent
+}
+else
+{
+    @if (SinAutorizacion != null)
+    {
+        @SinAutorizacion
+    }
+  
+   
+}
+
+
+@code {
+    [Parameter] public List<TareaDTO>? TareasContext { get; set; }
+    [Parameter] public string Permisos { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public RenderFragment? SinAutorizacion { get; set; }
+
+    private bool tienePermiso = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await VerificarPermisos();
+    }
+
+    private async Task VerificarPermisos()
+    {
+        var listPermisos = Permisos.Split(',');
+        if (TareasContext != null)
+        {
+            tienePermiso = TareasContext.Exists(x => listPermisos.Contains(x.Id.ToString()));
+            
+        }      
+        
+    }
+}

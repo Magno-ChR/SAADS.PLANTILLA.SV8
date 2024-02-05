@@ -1,0 +1,79 @@
+﻿@inject IJSRuntime JSRuntime
+<div class="modal fade" id="@id" data-bs-backdrop="@backdrop" data-bs-keyboard="@keyboard" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog @_sizeModal">
+        <div class="modal-content">
+            <div class="modal-header text">
+                <h5 class="modal-title " id="exampleModalLabel">@titulo</h5>
+                <button type="button " class=" btn  p-0 fs-1 " style="width:fit-content; color:var(--fg-color);border: none !important" @onclick="()=>{ onCerrar.InvokeAsync();}" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="bi bi-x ">
+                    </i>
+                </button>
+            </div>
+            <div class="modal-body" style="height:fit-content">
+                @ChildContent
+            </div>
+            @if(footerVisible)
+            {
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="()=>{ onCerrar.InvokeAsync();}" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" @onclick="()=>{ onSubmit.InvokeAsync();}">Guardar</button>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string id { get; set; } = "componenteModal";
+    [Parameter] public string titulo { get; set; } = "Titulo";    
+    [Parameter] public  SizeModal? sizeModal { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public EventCallback onCerrar { get; set; }
+    [Parameter] public EventCallback onSubmit { get; set; }
+    [Parameter] public bool footerVisible { get; set; } = false;
+
+    private string _sizeModal  
+    { 
+        get
+        {
+
+            switch (sizeModal)
+            {
+                case SizeModal.small:
+                    return "modal-sm";                 
+                case SizeModal.large:
+                    return "modal-lg";
+                case SizeModal.extralarge:
+                    return "modal-xl";
+                default:
+                    return "";
+            }
+        }
+
+    } 
+
+
+    //bloquear que se cierre el modal al dar click fuera del modal
+    [Parameter] public bool? bloquearCerrar { get; set; } = false;
+    public string keyboard => bloquearCerrar == false ? "true" : "false";
+    public string backdrop => bloquearCerrar == false ? "true" : "static";
+
+    public async Task AbrirModal()
+    {
+        //show modal anulacion
+
+        //abrir modal
+        var js = $"$('#{id}').modal('show');";
+        await JSRuntime.InvokeVoidAsync("eval", js);
+
+    }
+
+    public async Task CerrarModal()
+    {
+        //cerrar modal
+        var js = $"$('#{id}').modal('hide');";
+        await JSRuntime.InvokeVoidAsync("eval", js);
+    }
+    
+}
